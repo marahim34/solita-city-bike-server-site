@@ -213,12 +213,214 @@ async function run() {
             });
         });
 
+        //Get all destinations of July
+        app.get('/journey-destinations/july', async (req, res) => {
 
+            // current page
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
 
+            const query = {};
+            const count = await journeyList03Collection.countDocuments(query)
+            const journeyList03 = journeyList03Collection
+                .find(query)
+                .limit(limit)
+                .skip(limit * (page - 1));
+            const result = await journeyList03
+                .toArray();
+            res.send(
+                {
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+        });
 
+        // Get searched destinations of June
+        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
+        app.get('/journey-destinations/june/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
 
+            // current page 
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
 
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+                        { departure: { $regex: key, $options: 'i' } },
+                        { departure_station_id: { $regex: key, $options: 'i' } },
+                        { departure_station_name: { $regex: key, $options: 'i' } },
+                        { return: { $regex: key, $options: 'i' } },
+                        { return_station_id: { $regex: key, $options: 'i' } },
+                        { return_station_name: { $regex: key, $options: 'i' } }
+                    ]
+                }
+            }
+            const count = await journeyList02Collection.countDocuments(query);
+            const result = await journeyList02Collection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
 
+        // Get searched destinations of June
+        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
+        app.get('/journey-destinations/june/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
+
+            // current page 
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+                        { departure: { $regex: key, $options: 'i' } },
+                        { departure_station_id: { $regex: key, $options: 'i' } },
+                        { departure_station_name: { $regex: key, $options: 'i' } },
+                        { return: { $regex: key, $options: 'i' } },
+                        { return_station_id: { $regex: key, $options: 'i' } },
+                        { return_station_name: { $regex: key, $options: 'i' } }
+                    ]
+                }
+            }
+            const count = await journeyList02Collection.countDocuments(query);
+            const result = await journeyList02Collection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
+
+        //Get all destinations of July
+        app.get('/journey-destinations/july', async (req, res) => {
+
+            // current page
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            const query = {};
+            const count = await journeyList03Collection.countDocuments(query)
+            const journeyList03 = journeyList03Collection
+                .find(query)
+                .limit(limit)
+                .skip(limit * (page - 1));
+            const result = await journeyList03
+                .toArray();
+            res.send(
+                {
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+        });
+
+        // Get searched destinations of June
+        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
+        app.get('/journey-destinations/june/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
+
+            // current page 
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+                        { departure: { $regex: key, $options: 'i' } },
+                        { departure_station_id: { $regex: key, $options: 'i' } },
+                        { departure_station_name: { $regex: key, $options: 'i' } },
+                        { return: { $regex: key, $options: 'i' } },
+                        { return_station_id: { $regex: key, $options: 'i' } },
+                        { return_station_name: { $regex: key, $options: 'i' } }
+                    ]
+                }
+            }
+            const count = await journeyList02Collection.countDocuments(query);
+            const result = await journeyList02Collection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
+
+        //Get all destinations of July
+        app.get('/journey-destinations/july', async (req, res) => {
+
+            // current page
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            const query = {};
+            const count = await journeyList03Collection.countDocuments(query)
+            const journeyList03 = journeyList03Collection
+                .find(query)
+                .limit(limit)
+                .skip(limit * (page - 1));
+            const result = await journeyList03
+                .toArray();
+            res.send(
+                {
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+        });
+
+        // Get searched destinations of June
+        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
+        app.get('/journey-destinations/july/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
+
+            // current page 
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+                        { departure: { $regex: key, $options: 'i' } },
+                        { departure_station_id: { $regex: key, $options: 'i' } },
+                        { departure_station_name: { $regex: key, $options: 'i' } },
+                        { return: { $regex: key, $options: 'i' } },
+                        { return_station_id: { $regex: key, $options: 'i' } },
+                        { return_station_name: { $regex: key, $options: 'i' } }
+                    ]
+                }
+            }
+            const count = await journeyList03Collection.countDocuments(query);
+            const result = await journeyList03Collection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
 
     }
     finally {
