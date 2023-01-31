@@ -31,10 +31,20 @@ async function run() {
         //Get all bike stations
         app.get('/bike-stations', async (req, res) => {
             const query = {};
-            const bikeStations = bikeStationsCollection.find(query);
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+            const bikeStations = bikeStationsCollection
+                .find(query)
+                .limit(limit)
+                .skip(limit * (page - 1));
             const result = await bikeStations.toArray();
-            res.send(result);
-        })
+            const count = await bikeStationsCollection.countDocuments(query);
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
 
         // Get single bike station
         app.get('/bike-stations/:id', async (req, res) => {
@@ -42,8 +52,70 @@ async function run() {
             console.log(id);
             const filter = { _id: ObjectId(id) };
             const bikeStation = await bikeStationsCollection.findOne(filter);
-            res.send(bikeStation);
-        })
+            res.send({
+                status: "success",
+                data: bikeStation
+            });
+        });
+
+        // Get searched bikeStations
+        app.get('/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { name: { $regex: key, $options: 'i' } },
+                        { namn_swedish: { $regex: key, $options: 'i' } },
+                        { nimi_finnish: { $regex: key, $options: 'i' } },
+                        { operaattor: { $regex: key, $options: 'i' } },
+                        { osite: { $regex: key, $options: 'i' } },
+                        { stad: { $regex: key, $options: 'i' } },
+                        { address: { $regex: key, $options: 'i' } },
+                    ]
+                }
+            }
+            const count = await bikeStationsCollection.countDocuments(query);
+            const result = await bikeStationsCollection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
+
+        //Get all destinations of May
+        app.get('/journey-destinations/may', async (req, res) => {
+
+            // current page
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            const query = {};
+            const journeyList01 = journeyList01Collection
+                .find(query)
+                .limit(limit)
+                .skip(limit * (page - 1));
+            const result = await journeyList01
+                .toArray();
+            res.send(
+                {
+                    status: "success",
+                    data: result
+                });
+        });
+
+
+
+
+
+
 
 
     }
@@ -55,9 +127,9 @@ async function run() {
 run().catch(error => console.error(error))
 
 app.get('/', (req, res) => {
-    res.send('delta-clinic server is running')
+    res.send('Solita server is running')
 });
 
 app.listen(port, () => {
-    console.log(`delta-clinic server is running on port: ${port}`);
+    console.log(`Solita server is running on port: ${port}`);
 });
