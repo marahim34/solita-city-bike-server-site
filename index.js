@@ -62,7 +62,7 @@ async function run() {
         });
 
         // Get searched bikeStations
-        app.get('/search', async (req, res) => {
+        app.get('/bike-stations/search', async (req, res) => {
             let query = {};
             const key = req.query.key;
 
@@ -117,6 +117,18 @@ async function run() {
                     count: count,
                     data: result
                 });
+        });
+
+        // Get a journey details
+        app.get('/journey-destinations/may/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: ObjectId(id) };
+            const journeyDetails = await journeyList01Collection.findOne(filter);
+            res.send({
+                status: "success",
+                data: journeyDetails
+            });
         });
 
         // Get searched destinations of May
@@ -178,96 +190,15 @@ async function run() {
                 });
         });
 
-        // Get searched destinations of June
-        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
-        app.get('/journey-destinations/june/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
-
-            // current page 
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-
-            if (key && key.length) {
-                query = {
-                    $or: [
-                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
-                        { departure: { $regex: key, $options: 'i' } },
-                        { departure_station_id: { $regex: key, $options: 'i' } },
-                        { departure_station_name: { $regex: key, $options: 'i' } },
-                        { return: { $regex: key, $options: 'i' } },
-                        { return_station_id: { $regex: key, $options: 'i' } },
-                        { return_station_name: { $regex: key, $options: 'i' } }
-                    ]
-                }
-            }
-            const count = await journeyList02Collection.countDocuments(query);
-            const result = await journeyList02Collection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
+        // Get a journey details
+        app.get('/journey-destinations/june/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: ObjectId(id) };
+            const journeyDetails = await journeyList02Collection.findOne(filter);
             res.send({
                 status: "success",
-                count: count,
-                data: result
-            });
-        });
-
-        //Get all destinations of July
-        app.get('/journey-destinations/july', async (req, res) => {
-
-            // current page
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-
-            const query = {};
-            const count = await journeyList03Collection.countDocuments(query)
-            const journeyList03 = journeyList03Collection
-                .find(query)
-                .limit(limit)
-                .skip(limit * (page - 1));
-            const result = await journeyList03
-                .toArray();
-            res.send(
-                {
-                    status: "success",
-                    count: count,
-                    data: result
-                });
-        });
-
-        // Get searched destinations of June
-        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
-        app.get('/journey-destinations/june/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
-
-            // current page 
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-
-            if (key && key.length) {
-                query = {
-                    $or: [
-                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
-                        { departure: { $regex: key, $options: 'i' } },
-                        { departure_station_id: { $regex: key, $options: 'i' } },
-                        { departure_station_name: { $regex: key, $options: 'i' } },
-                        { return: { $regex: key, $options: 'i' } },
-                        { return_station_id: { $regex: key, $options: 'i' } },
-                        { return_station_name: { $regex: key, $options: 'i' } }
-                    ]
-                }
-            }
-            const count = await journeyList02Collection.countDocuments(query);
-            const result = await journeyList02Collection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
-            res.send({
-                status: "success",
-                count: count,
-                data: result
+                data: journeyDetails
             });
         });
 
@@ -329,65 +260,19 @@ async function run() {
                 });
         });
 
-        // Get searched destinations of June
-        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
-        app.get('/journey-destinations/june/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
-
-            // current page 
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-
-            if (key && key.length) {
-                query = {
-                    $or: [
-                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
-                        { departure: { $regex: key, $options: 'i' } },
-                        { departure_station_id: { $regex: key, $options: 'i' } },
-                        { departure_station_name: { $regex: key, $options: 'i' } },
-                        { return: { $regex: key, $options: 'i' } },
-                        { return_station_id: { $regex: key, $options: 'i' } },
-                        { return_station_name: { $regex: key, $options: 'i' } }
-                    ]
-                }
-            }
-            const count = await journeyList02Collection.countDocuments(query);
-            const result = await journeyList02Collection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
+        // Get a journey details
+        app.get('/journey-destinations/july/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: ObjectId(id) };
+            const journeyDetails = await journeyList03Collection.findOne(filter);
             res.send({
                 status: "success",
-                count: count,
-                data: result
+                data: journeyDetails
             });
         });
 
-        //Get all destinations of July
-        app.get('/journey-destinations/july', async (req, res) => {
-
-            // current page
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-
-            const query = {};
-            const count = await journeyList03Collection.countDocuments(query)
-            const journeyList03 = journeyList03Collection
-                .find(query)
-                .limit(limit)
-                .skip(limit * (page - 1));
-            const result = await journeyList03
-                .toArray();
-            res.send(
-                {
-                    status: "success",
-                    count: count,
-                    data: result
-                });
-        });
-
-        // Get searched destinations of June
+        // Get searched destinations of July
         // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
         app.get('/journey-destinations/july/search', async (req, res) => {
             let query = {};
