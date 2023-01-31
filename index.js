@@ -31,8 +31,11 @@ async function run() {
         //Get all bike stations
         app.get('/bike-stations', async (req, res) => {
             const query = {};
+
+            // current page
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
+
             const bikeStations = bikeStationsCollection
                 .find(query)
                 .limit(limit)
@@ -62,11 +65,14 @@ async function run() {
         app.get('/search', async (req, res) => {
             let query = {};
             const key = req.query.key;
+
+            // Current Page
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
 
             if (key && key.length) {
                 query = {
+                    // text indexes
                     $or: [
                         { name: { $regex: key, $options: 'i' } },
                         { namn_swedish: { $regex: key, $options: 'i' } },
@@ -98,6 +104,7 @@ async function run() {
             const page = parseInt(req.query.page) || 1;
 
             const query = {};
+            const count = await journeyList01Collection.countDocuments(query)
             const journeyList01 = journeyList01Collection
                 .find(query)
                 .limit(limit)
@@ -107,8 +114,103 @@ async function run() {
             res.send(
                 {
                     status: "success",
+                    count: count,
                     data: result
                 });
+        });
+
+        // Get searched destinations of May
+        // API link: http://localhost:5000/journey-destinations/may/search?key=It%C3%A4merentori
+        app.get('/journey-destinations/may/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
+
+            // current page 
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+                        { departure: { $regex: key, $options: 'i' } },
+                        { departure_station_id: { $regex: key, $options: 'i' } },
+                        { departure_station_name: { $regex: key, $options: 'i' } },
+                        { return: { $regex: key, $options: 'i' } },
+                        { return_station_id: { $regex: key, $options: 'i' } },
+                        { return_station_name: { $regex: key, $options: 'i' } }
+                    ]
+                }
+            }
+            const count = await journeyList01Collection.countDocuments(query);
+            const result = await journeyList01Collection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
+        });
+
+
+        //Get all destinations of June
+        app.get('/journey-destinations/june', async (req, res) => {
+
+            // current page
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            const query = {};
+            const count = await journeyList02Collection.countDocuments(query)
+            const journeyList02 = journeyList02Collection
+                .find(query)
+                .limit(limit)
+                .skip(limit * (page - 1));
+            const result = await journeyList02
+                .toArray();
+            res.send(
+                {
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+        });
+
+        // Get searched destinations of June
+        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
+        app.get('/journey-destinations/june/search', async (req, res) => {
+            let query = {};
+            const key = req.query.key;
+
+            // current page 
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+
+            if (key && key.length) {
+                query = {
+                    $or: [
+                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+                        { departure: { $regex: key, $options: 'i' } },
+                        { departure_station_id: { $regex: key, $options: 'i' } },
+                        { departure_station_name: { $regex: key, $options: 'i' } },
+                        { return: { $regex: key, $options: 'i' } },
+                        { return_station_id: { $regex: key, $options: 'i' } },
+                        { return_station_name: { $regex: key, $options: 'i' } }
+                    ]
+                }
+            }
+            const count = await journeyList02Collection.countDocuments(query);
+            const result = await journeyList02Collection.find(query)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
         });
 
 
