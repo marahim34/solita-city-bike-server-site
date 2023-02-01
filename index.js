@@ -61,40 +61,85 @@ async function run() {
             });
         });
 
-        // Get searched bikeStations
-        app.get('/bike-stations/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
 
-            // Current Page
+        app.get('/stationsSearch', async (req, res) => {
+            const key = req.query.key;
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
+            // console.log(key);
+            let query = {};
 
             if (key && key.length) {
+                const regex = new RegExp(String(key), 'i');
+                // console.log(regex);
                 query = {
-                    // text indexes
                     $or: [
-                        { name: { $regex: key, $options: 'i' } },
-                        { namn_swedish: { $regex: key, $options: 'i' } },
-                        { nimi_finnish: { $regex: key, $options: 'i' } },
-                        { operaattor: { $regex: key, $options: 'i' } },
-                        { osite: { $regex: key, $options: 'i' } },
-                        { stad: { $regex: key, $options: 'i' } },
-                        { address: { $regex: key, $options: 'i' } },
+                        { name: { $regex: regex } },
+                        { namn_swedish: { $regex: regex } },
+                        { nimi_finnish: { $regex: regex } },
+                        { operaattor: { $regex: regex } },
+                        { osite: { $regex: regex } },
+                        { stad: { $regex: regex } },
+                        { address: { $regex: regex } },
+                        { kaupunki: { $regex: regex } },
                     ]
-                }
+                };
             }
-            const count = await bikeStationsCollection.countDocuments(query);
-            const result = await bikeStationsCollection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
-            res.send({
-                status: "success",
-                count: count,
-                data: result
-            });
+
+            try {
+                const count = await bikeStationsCollection.countDocuments(query);
+                const result = await bikeStationsCollection
+                    .find(query)
+                    .skip((page - 1) * limit)
+                    .limit(limit)
+                    .toArray();
+                res.status(200).send({
+                    status: 'success',
+                    count: count,
+                    data: result
+                });
+            } catch (error) {
+                res.status(500).send({
+                    status: 'error',
+                    error: error.message
+                });
+            }
         });
+
+
+        // Get searched bikeStations
+        // app.get('/bike-stations/search', async (req, res) => {
+        //     const key = req.query.key;
+        // const limit = parseInt(req.query.limit) || 20;
+        // const page = parseInt(req.query.page) || 1;
+
+        //     const query = key && key.length
+        //         ? {
+        //             $or: [
+        //                 { name: { $regex: key, $options: 'i' } },
+        //                 { namn_swedish: { $regex: key, $options: 'i' } },
+        //                 { nimi_finnish: { $regex: key, $options: 'i' } },
+        //                 { operaattor: { $regex: key, $options: 'i' } },
+        //                 { osite: { $regex: key, $options: 'i' } },
+        //                 { stad: { $regex: key, $options: 'i' } },
+        //                 { address: { $regex: key, $options: 'i' } },
+        //             ]
+        //         }
+        //         : {};
+
+        //     const count = await bikeStationsCollection.countDocuments(query);
+        //     const result = await bikeStationsCollection.find(query)
+        //     .skip((page - 1) * limit)
+        // .limit(limit)
+        //         .toArray();
+
+        //     res.send({
+        //         status: "success",
+        //         count,
+        //         data: result
+        //     });
+        // });
+
 
         //Get all destinations of May
         app.get('/journey-destinations/may', async (req, res) => {
@@ -133,38 +178,38 @@ async function run() {
 
         // Get searched destinations of May
         // API link: http://localhost:5000/journey-destinations/may/search?key=It%C3%A4merentori
-        app.get('/journey-destinations/may/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
+        // app.get('/journey-destinations/may/search', async (req, res) => {
+        //     let query = {};
+        //     const key = req.query.key;
 
-            // current page 
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
+        //     // current page 
+        //     const limit = parseInt(req.query.limit) || 20;
+        //     const page = parseInt(req.query.page) || 1;
 
-            if (key && key.length) {
-                query = {
-                    $or: [
-                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
-                        { departure: { $regex: key, $options: 'i' } },
-                        { departure_station_id: { $regex: key, $options: 'i' } },
-                        { departure_station_name: { $regex: key, $options: 'i' } },
-                        { return: { $regex: key, $options: 'i' } },
-                        { return_station_id: { $regex: key, $options: 'i' } },
-                        { return_station_name: { $regex: key, $options: 'i' } }
-                    ]
-                }
-            }
-            const count = await journeyList01Collection.countDocuments(query);
-            const result = await journeyList01Collection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
-            res.send({
-                status: "success",
-                count: count,
-                data: result
-            });
-        });
+        //     if (key && key.length) {
+        //         query = {
+        //             $or: [
+        //                 { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+        //                 { departure: { $regex: key, $options: 'i' } },
+        //                 { departure_station_id: { $regex: key, $options: 'i' } },
+        //                 { departure_station_name: { $regex: key, $options: 'i' } },
+        //                 { return: { $regex: key, $options: 'i' } },
+        //                 { return_station_id: { $regex: key, $options: 'i' } },
+        //                 { return_station_name: { $regex: key, $options: 'i' } }
+        //             ]
+        //         }
+        //     }
+        //     const count = await journeyList01Collection.countDocuments(query);
+        //     const result = await journeyList01Collection.find(query)
+        //         .skip((page - 1) * limit)
+        //         .limit(limit)
+        //         .toArray();
+        //     res.send({
+        //         status: "success",
+        //         count: count,
+        //         data: result
+        //     });
+        // });
 
 
         //Get all destinations of June
@@ -204,38 +249,38 @@ async function run() {
 
         // Get searched destinations of June
         // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
-        app.get('/journey-destinations/june/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
+        // app.get('/journey-destinations/june/search', async (req, res) => {
+        //     let query = {};
+        //     const key = req.query.key;
 
-            // current page 
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
+        //     // current page 
+        //     const limit = parseInt(req.query.limit) || 20;
+        //     const page = parseInt(req.query.page) || 1;
 
-            if (key && key.length) {
-                query = {
-                    $or: [
-                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
-                        { departure: { $regex: key, $options: 'i' } },
-                        { departure_station_id: { $regex: key, $options: 'i' } },
-                        { departure_station_name: { $regex: key, $options: 'i' } },
-                        { return: { $regex: key, $options: 'i' } },
-                        { return_station_id: { $regex: key, $options: 'i' } },
-                        { return_station_name: { $regex: key, $options: 'i' } }
-                    ]
-                }
-            }
-            const count = await journeyList02Collection.countDocuments(query);
-            const result = await journeyList02Collection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
-            res.send({
-                status: "success",
-                count: count,
-                data: result
-            });
-        });
+        //     if (key && key.length) {
+        //         query = {
+        //             $or: [
+        //                 { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+        //                 { departure: { $regex: key, $options: 'i' } },
+        //                 { departure_station_id: { $regex: key, $options: 'i' } },
+        //                 { departure_station_name: { $regex: key, $options: 'i' } },
+        //                 { return: { $regex: key, $options: 'i' } },
+        //                 { return_station_id: { $regex: key, $options: 'i' } },
+        //                 { return_station_name: { $regex: key, $options: 'i' } }
+        //             ]
+        //         }
+        //     }
+        //     const count = await journeyList02Collection.countDocuments(query);
+        //     const result = await journeyList02Collection.find(query)
+        //         .skip((page - 1) * limit)
+        //         .limit(limit)
+        //         .toArray();
+        //     res.send({
+        //         status: "success",
+        //         count: count,
+        //         data: result
+        //     });
+        // });
 
         //Get all destinations of July
         app.get('/journey-destinations/july', async (req, res) => {
@@ -274,38 +319,38 @@ async function run() {
 
         // Get searched destinations of July
         // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
-        app.get('/journey-destinations/july/search', async (req, res) => {
-            let query = {};
-            const key = req.query.key;
+        // app.get('/journey-destinations/july/search', async (req, res) => {
+        //     let query = {};
+        //     const key = req.query.key;
 
-            // current page 
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
+        //     // current page 
+        //     const limit = parseInt(req.query.limit) || 20;
+        //     const page = parseInt(req.query.page) || 1;
 
-            if (key && key.length) {
-                query = {
-                    $or: [
-                        { covered_distance_in_meter: { $regex: key, $options: 'i' } },
-                        { departure: { $regex: key, $options: 'i' } },
-                        { departure_station_id: { $regex: key, $options: 'i' } },
-                        { departure_station_name: { $regex: key, $options: 'i' } },
-                        { return: { $regex: key, $options: 'i' } },
-                        { return_station_id: { $regex: key, $options: 'i' } },
-                        { return_station_name: { $regex: key, $options: 'i' } }
-                    ]
-                }
-            }
-            const count = await journeyList03Collection.countDocuments(query);
-            const result = await journeyList03Collection.find(query)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .toArray();
-            res.send({
-                status: "success",
-                count: count,
-                data: result
-            });
-        });
+        //     if (key && key.length) {
+        //         query = {
+        //             $or: [
+        //                 { covered_distance_in_meter: { $regex: key, $options: 'i' } },
+        //                 { departure: { $regex: key, $options: 'i' } },
+        //                 { departure_station_id: { $regex: key, $options: 'i' } },
+        //                 { departure_station_name: { $regex: key, $options: 'i' } },
+        //                 { return: { $regex: key, $options: 'i' } },
+        //                 { return_station_id: { $regex: key, $options: 'i' } },
+        //                 { return_station_name: { $regex: key, $options: 'i' } }
+        //             ]
+        //         }
+        //     }
+        //     const count = await journeyList03Collection.countDocuments(query);
+        //     const result = await journeyList03Collection.find(query)
+        //         .skip((page - 1) * limit)
+        //         .limit(limit)
+        //         .toArray();
+        //     res.send({
+        //         status: "success",
+        //         count: count,
+        //         data: result
+        //     });
+        // });
 
     }
     finally {
