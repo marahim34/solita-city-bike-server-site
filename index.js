@@ -54,7 +54,6 @@ async function run() {
         });
 
 
-
         // Get single bike station
         app.get('/bike-stations/:id', async (req, res) => {
             const id = req.params.id;
@@ -114,19 +113,22 @@ async function run() {
 
         //Get all destinations of May
         app.get('/journey-destinations/may', async (req, res) => {
+            const query = {};
 
             // current page
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
+            const sortOrder = req.query.sortOrder || 1;
 
-            const query = {};
-            const count = await journeyList01Collection.countDocuments(query)
             const journeyList01 = journeyList01Collection
                 .find(query)
+                .sort({ name: sortOrder })
                 .limit(limit)
                 .skip(limit * (page - 1));
-            const result = await journeyList01
-                .toArray();
+
+            const result = await journeyList01.toArray();
+            const count = await journeyList01Collection.countDocuments(query)
+
             res.send(
                 {
                     status: "success",
