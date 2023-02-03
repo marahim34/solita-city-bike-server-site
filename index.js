@@ -120,11 +120,14 @@ async function run() {
             const page = parseInt(req.query.page) || 1;
             const sortOrder = req.query.sortOrder || 1;
 
+            await journeyList01Collection.createIndex({ departure_station_name: 1 });
+
             const journeyList01 = journeyList01Collection
                 .find(query)
                 .sort({ name: sortOrder })
                 .limit(limit)
-                .skip(limit * (page - 1));
+                .skip(limit * (page - 1))
+                .allowDiskUse(true);
 
             const result = await journeyList01.toArray();
             const count = await journeyList01Collection.countDocuments(query)
@@ -194,19 +197,25 @@ async function run() {
 
         //Get all destinations of June
         app.get('/journey-destinations/june', async (req, res) => {
+            const query = {};
 
             // current page
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
+            const sortOrder = req.query.sortOrder || 1;
 
-            const query = {};
-            const count = await journeyList02Collection.countDocuments(query)
+            await journeyList02Collection.createIndex({ departure_station_name: 1 });
+
             const journeyList02 = journeyList02Collection
                 .find(query)
+                .sort({ departure_station_name: sortOrder })
                 .limit(limit)
-                .skip(limit * (page - 1));
-            const result = await journeyList02
-                .toArray();
+                .skip(limit * (page - 1))
+                .allowDiskUse(true);
+
+            const count = await journeyList02Collection.countDocuments(query);
+            const result = await journeyList02.toArray();
+
             res.send(
                 {
                     status: "success",
