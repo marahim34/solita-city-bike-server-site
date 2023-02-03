@@ -124,7 +124,7 @@ async function run() {
 
             const journeyList01 = journeyList01Collection
                 .find(query)
-                .sort({ name: sortOrder })
+                .sort({ departure_station_name: sortOrder })
                 .limit(limit)
                 .skip(limit * (page - 1))
                 .allowDiskUse(true);
@@ -165,12 +165,13 @@ async function run() {
                 query = {
                     $or: [
                         { covered_distance_in_meter: { $regex: regex } },
-                        { departure: { $regex: regex } },
+                        { departure_time: { $regex: regex } },
                         { departure_station_id: { $regex: regex } },
                         { departure_station_name: { $regex: regex } },
-                        { return: { $regex: regex } },
+                        { return_time: { $regex: regex } },
                         { return_station_id: { $regex: regex } },
-                        { return_station_name: { $regex: regex } }
+                        { return_station_name: { $regex: regex } },
+                        { duration_in_seconds: { $regex: regex } }
                     ]
                 };
             }
@@ -242,6 +243,7 @@ async function run() {
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
             // console.log(key);
+
             let query = {};
 
             if (key && key.length) {
@@ -250,12 +252,13 @@ async function run() {
                 query = {
                     $or: [
                         { covered_distance_in_meter: { $regex: regex } },
-                        { departure: { $regex: regex } },
+                        { departure_time: { $regex: regex } },
                         { departure_station_id: { $regex: regex } },
                         { departure_station_name: { $regex: regex } },
-                        { return: { $regex: regex } },
+                        { return_time: { $regex: regex } },
                         { return_station_id: { $regex: regex } },
-                        { return_station_name: { $regex: regex } }
+                        { return_station_name: { $regex: regex } },
+                        { duration_in_seconds: { $regex: regex } }
                     ]
                 };
             }
@@ -267,11 +270,13 @@ async function run() {
                     .skip((page - 1) * limit)
                     .limit(limit)
                     .toArray();
+
                 res.status(200).send({
                     status: 'success',
                     count: count,
                     data: result
                 });
+
             } catch (error) {
                 res.status(500).send({
                     status: 'error',
@@ -282,19 +287,53 @@ async function run() {
 
         //Get all destinations of July
         app.get('/journey-destinations/july', async (req, res) => {
+            const query = {};
 
             // current page
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
+            const sortOrder = req.query.sortOrder || 1;
 
-            const query = {};
-            const count = await journeyList03Collection.countDocuments(query)
+            await journeyList02Collection.createIndex({ departure_station_name: 1 });
+
             const journeyList03 = journeyList03Collection
                 .find(query)
+                .sort({ departure_station_name: sortOrder })
                 .limit(limit)
-                .skip(limit * (page - 1));
+                .skip(limit * (page - 1))
+                .allowDiskUse(true);
+
+            const count = await journeyList03Collection.countDocuments(query)
             const result = await journeyList03
                 .toArray();
+            res.send(
+                {
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+        });
+
+        app.get('/journey-destinations/june', async (req, res) => {
+            const query = {};
+
+            // current page
+            const limit = parseInt(req.query.limit) || 20;
+            const page = parseInt(req.query.page) || 1;
+            const sortOrder = req.query.sortOrder || 1;
+
+            await journeyList02Collection.createIndex({ departure_station_name: 1 });
+
+            const journeyList02 = journeyList02Collection
+                .find(query)
+                .sort({ departure_station_name: sortOrder })
+                .limit(limit)
+                .skip(limit * (page - 1))
+                .allowDiskUse(true);
+
+            const count = await journeyList02Collection.countDocuments(query);
+            const result = await journeyList02.toArray();
+
             res.send(
                 {
                     status: "success",
@@ -316,7 +355,6 @@ async function run() {
         });
 
         // Get searched destinations of July
-        // API link: http://localhost:5000/journey-destinations/june/search?key=It%C3%A4merentori
         app.get('/destinationsOnJulySearch', async (req, res) => {
             const key = req.query.key;
             const limit = parseInt(req.query.limit) || 20;
@@ -330,12 +368,13 @@ async function run() {
                 query = {
                     $or: [
                         { covered_distance_in_meter: { $regex: regex } },
-                        { departure: { $regex: regex } },
+                        { departure_time: { $regex: regex } },
                         { departure_station_id: { $regex: regex } },
                         { departure_station_name: { $regex: regex } },
-                        { return: { $regex: regex } },
+                        { return_time: { $regex: regex } },
                         { return_station_id: { $regex: regex } },
-                        { return_station_name: { $regex: regex } }
+                        { return_station_name: { $regex: regex } },
+                        { duration_in_seconds: { $regex: regex } }
                     ]
                 };
             }
@@ -347,11 +386,13 @@ async function run() {
                     .skip((page - 1) * limit)
                     .limit(limit)
                     .toArray();
+
                 res.status(200).send({
                     status: 'success',
                     count: count,
                     data: result
                 });
+
             } catch (error) {
                 res.status(500).send({
                     status: 'error',
