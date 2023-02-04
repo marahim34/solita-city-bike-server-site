@@ -347,7 +347,7 @@ async function run() {
 
             console.log(req.query);
 
-            if (req.query.departure_station_name === req.query.departure_station_name) {
+            if (req.query.departure_station_name) {
                 query.departure_station_name = req.query.departure_station_name;
             }
 
