@@ -197,45 +197,45 @@ async function run() {
         });
 
         //Get all destinations of June
-        app.get('/journey-destinations/june', async (req, res) => {
-            const query = {};
+        // app.get('/journey-destinations/june', async (req, res) => {
+        //     const query = {};
 
-            // current page
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-            const sortOrder = req.query.sortOrder || 1;
+        //     // current page
+        //     const limit = parseInt(req.query.limit) || 20;
+        //     const page = parseInt(req.query.page) || 1;
+        //     const sortOrder = req.query.sortOrder || 1;
 
-            await journeyList02Collection.createIndex({ departure_station_name: 1 });
+        //     await journeyList02Collection.createIndex({ departure_station_name: 1 });
 
-            const journeyList02 = journeyList02Collection
-                .find(query)
-                .sort({ departure_station_name: sortOrder })
-                .limit(limit)
-                .skip(limit * (page - 1))
-                .allowDiskUse(true);
+        //     const journeyList02 = journeyList02Collection
+        //         .find(query)
+        //         .sort({ departure_station_name: sortOrder })
+        //         .limit(limit)
+        //         .skip(limit * (page - 1))
+        //         .allowDiskUse(true);
 
-            const count = await journeyList02Collection.countDocuments(query);
-            const result = await journeyList02.toArray();
+        //     const count = await journeyList02Collection.countDocuments(query);
+        //     const result = await journeyList02.toArray();
 
-            res.send(
-                {
-                    status: "success",
-                    count: count,
-                    data: result
-                });
-        });
+        //     res.send(
+        //         {
+        //             status: "success",
+        //             count: count,
+        //             data: result
+        //         });
+        // });
 
-        // Get a journey details
-        app.get('/journey-destinations/june/:id', async (req, res) => {
-            const id = req.params.id;
-            // console.log(id);
-            const filter = { _id: ObjectId(id) };
-            const journeyDetails = await journeyList02Collection.findOne(filter);
-            res.send({
-                status: "success",
-                data: journeyDetails
-            });
-        });
+        // // Get a journey details
+        // app.get('/journey-destinations/june/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     // console.log(id);
+        //     const filter = { _id: ObjectId(id) };
+        //     const journeyDetails = await journeyList02Collection.findOne(filter);
+        //     res.send({
+        //         status: "success",
+        //         data: journeyDetails
+        //     });
+        // });
 
         // Get searched destinations of June
         app.get('/destinationsOnJuneSearch', async (req, res) => {
@@ -314,33 +314,118 @@ async function run() {
                 });
         });
 
+        // app.get('/journey-destinations/june', async (req, res) => {
+        //     const query = {};
+
+        //     // current page
+        //     const limit = parseInt(req.query.limit) || 20;
+        //     const page = parseInt(req.query.page) || 1;
+        //     const sortOrder = req.query.sortOrder || 1;
+
+        //     await journeyList02Collection.createIndex({ departure_station_name: 1 });
+
+        //     const journeyList02 = journeyList02Collection
+        //         .find(query)
+        //         .sort({ departure_station_name: sortOrder })
+        //         .limit(limit)
+        //         .skip(limit * (page - 1))
+        //         .allowDiskUse(true);
+
+        //     const count = await journeyList02Collection.countDocuments(query);
+        //     const result = await journeyList02.toArray();
+
+        //     res.send(
+        //         {
+        //             status: "success",
+        //             count: count,
+        //             data: result
+        //         });
+        // });
+
         app.get('/journey-destinations/june', async (req, res) => {
             const query = {};
+
+            console.log(req.query);
+
+            if (req.query.departure_station_name === req.query.departure_station_name) {
+                query.departure_station_name = req.query.departure_station_name;
+            }
+
+            if (req.query.departure_station_id) {
+                query.departure_station_id = parseInt(req.query.departure_station_id);
+            }
+
+            if (req.query.return_station_name) {
+                query.return_station_name = req.query.return_station_name;
+            }
+
+            if (req.query.return_station_id) {
+                query.return_station_id = parseInt(req.query.return_station_id);
+            }
+
+            if (req.query.covered_distance_in_meter) {
+                switch (req.query.covered_distance_in_meter) {
+                    case '0-.5':
+                        query.covered_distance_in_meter = { $lte: 500 };
+                        break;
+                    case '.51-2':
+                        query.covered_distance_in_meter = { $gt: 500, $lte: 2000 };
+                        break;
+                    case '2-5':
+                        query.covered_distance_in_meter = { $gt: 2000, $lte: 5000 };
+                        break;
+                    case 'more_than_5':
+                        query.covered_distance_in_meter = { $gt: 5000 };
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (req.query.duration_in_seconds) {
+                switch (req.query.duration_in_seconds) {
+                    case 'less_than_2':
+                        query.duration_in_seconds = { $lte: 120 };
+                        break;
+                    case '3-5':
+                        query.duration_in_seconds = { $gt: 120, $lte: 300 };
+                        break;
+                    case '6-10':
+                        query.duration_in_seconds = { $gt: 300, $lte: 600 };
+                        break;
+                    case 'more_than_10':
+                        query.duration_in_seconds = { $gt: 600 };
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             // current page
             const limit = parseInt(req.query.limit) || 20;
             const page = parseInt(req.query.page) || 1;
+            const sortBy = req.query.sortBy || 'departure_station_name';
             const sortOrder = req.query.sortOrder || 1;
 
-            await journeyList02Collection.createIndex({ departure_station_name: 1 });
+            const sort = {};
+            sort[sortBy] = sortOrder;
 
             const journeyList02 = journeyList02Collection
                 .find(query)
-                .sort({ departure_station_name: sortOrder })
+                .sort(sort)
                 .limit(limit)
-                .skip(limit * (page - 1))
-                .allowDiskUse(true);
+                .skip(limit * (page - 1));
 
             const count = await journeyList02Collection.countDocuments(query);
             const result = await journeyList02.toArray();
 
-            res.send(
-                {
-                    status: "success",
-                    count: count,
-                    data: result
-                });
+            res.send({
+                status: "success",
+                count: count,
+                data: result
+            });
         });
+
 
         // Get a journey details
         app.get('/journey-destinations/july/:id', async (req, res) => {
