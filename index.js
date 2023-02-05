@@ -30,83 +30,111 @@ async function run() {
 
         //Get all bike stations
         app.get('/bike-stations', async (req, res) => {
-            const query = {};
+            try {
+                const query = {};
 
-            // current page
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-            const sortOrder = req.query.sortOrder || 1;
+                // current page
+                const limit = parseInt(req.query.limit) || 20;
+                const page = parseInt(req.query.page) || 1;
+                const sortOrder = req.query.sortOrder || 1;
 
-            const bikeStations = bikeStationsCollection
-                .find(query)
-                .sort({ name: sortOrder })
-                .limit(limit)
-                .skip(limit * (page - 1));
+                const bikeStations = bikeStationsCollection
+                    .find(query)
+                    .sort({ name: sortOrder })
+                    .limit(limit)
+                    .skip(limit * (page - 1));
 
-            const result = await bikeStations.toArray();
-            const count = await bikeStationsCollection.countDocuments(query);
+                const result = await bikeStations.toArray();
+                const count = await bikeStationsCollection.countDocuments(query);
 
-            res.send({
-                status: "success",
-                count: count,
-                data: result
-            });
+                res.send({
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({
+                    status: "error",
+                    message: "An error occurred while fetching bike stations"
+                });
+            }
         });
+
 
 
         // Get single bike station
         app.get('/bike-stations/:id', async (req, res) => {
-            const id = req.params.id;
-            // console.log(id);
-            const filter = { _id: ObjectId(id) };
-            const bikeStation = await bikeStationsCollection.findOne(filter);
-            res.send({
-                status: "success",
-                data: bikeStation
-            });
+            try {
+                const id = req.params.id;
+                const filter = { _id: ObjectId(id) };
+                const bikeStation = await bikeStationsCollection.findOne(filter);
+
+                if (!bikeStation) {
+                    return res.status(404).send({
+                        status: "error",
+                        message: "Bike station not found"
+                    });
+                }
+
+                res.send({
+                    status: "success",
+                    data: bikeStation
+                });
+
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({
+                    status: "error",
+                    message: "An error occurred while fetching the bike station"
+                });
+            }
         });
 
 
+
         app.get('/stationsSearch', async (req, res) => {
-            const key = req.query.key;
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-            console.log(key, limit, page);
-            let query = {};
-
-            if (key && key.length) {
-                const regex = new RegExp(String(key), 'i');
-                // console.log(regex);
-                query = {
-                    $or: [
-                        { name: { $regex: regex } },
-                        { namn_swedish: { $regex: regex } },
-                        { nimi_finnish: { $regex: regex } },
-                        { operaattor: { $regex: regex } },
-                        { osite: { $regex: regex } },
-                        { stad: { $regex: regex } },
-                        { address: { $regex: regex } },
-                        { kaupunki: { $regex: regex } },
-                    ]
-                };
-            }
-
             try {
+                const key = req.query.key;
+                const limit = parseInt(req.query.limit) || 20;
+                const page = parseInt(req.query.page) || 1;
+
+                let query = {};
+
+                if (key && key.length) {
+                    const regex = new RegExp(String(key), 'i');
+                    query = {
+                        $or: [
+                            { name: { $regex: regex } },
+                            { namn_swedish: { $regex: regex } },
+                            { nimi_finnish: { $regex: regex } },
+                            { operaattor: { $regex: regex } },
+                            { osite: { $regex: regex } },
+                            { stad: { $regex: regex } },
+                            { address: { $regex: regex } },
+                            { kaupunki: { $regex: regex } },
+                        ]
+                    };
+                }
+
                 const count = await bikeStationsCollection.countDocuments(query);
                 const result = await bikeStationsCollection
                     .find(query)
                     .skip((page - 1) * limit)
                     .limit(limit)
                     .toArray();
+
                 res.status(200).send({
                     status: 'success',
                     count: count,
                     data: result
                 });
+
             } catch (error) {
+                console.error(error);
                 res.status(500).send({
                     status: 'error',
-                    error: error.message
+                    message: "An error occurred while fetching the bike stations"
                 });
             }
         });
@@ -120,37 +148,54 @@ async function run() {
             const page = parseInt(req.query.page) || 1;
             const sortOrder = req.query.sortOrder || 1;
 
-            await journeyList01Collection.createIndex({ departure_station_name: 1 });
+            try {
+                await journeyList01Collection.createIndex({ departure_station_name: 1 });
 
-            const journeyList01 = journeyList01Collection
-                .find(query)
-                .sort({ departure_station_name: sortOrder })
-                .limit(limit)
-                .skip(limit * (page - 1))
-                .allowDiskUse(true);
+                const journeyList01 = journeyList01Collection
+                    .find(query)
+                    .sort({ departure_station_name: sortOrder })
+                    .limit(limit)
+                    .skip(limit * (page - 1))
+                    .allowDiskUse(true);
 
-            const result = await journeyList01.toArray();
-            const count = await journeyList01Collection.countDocuments(query)
+                const result = await journeyList01.toArray();
+                const count = await journeyList01Collection.countDocuments(query)
 
-            res.send(
-                {
+                res.send({
                     status: "success",
                     count: count,
                     data: result
                 });
+
+            } catch (error) {
+                res.status(500).send({
+                    status: 'error',
+                    error: error.message
+                });
+            }
         });
+
 
         // Get a journey details
         app.get('/journey-destinations/may/:id', async (req, res) => {
-            const id = req.params.id;
-            // console.log(id);
-            const filter = { _id: ObjectId(id) };
-            const journeyDetails = await journeyList01Collection.findOne(filter);
-            res.send({
-                status: "success",
-                data: journeyDetails
-            });
+            try {
+                const id = req.params.id;
+                const filter = { _id: ObjectId(id) };
+                const journeyDetails = await journeyList01Collection.findOne(filter);
+                res.send({
+                    status: "success",
+                    data: journeyDetails
+                });
+
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({
+                    status: "error",
+                    message: "An internal server error occurred"
+                });
+            }
         });
+
 
         app.get('/destinationsOnMaySearch', async (req, res) => {
             const key = req.query.key;
@@ -182,13 +227,16 @@ async function run() {
                     .find(query)
                     .skip((page - 1) * limit)
                     .limit(limit)
-                    .toArray();
+                    .toArray()
+                    .allowDiskUse(true);
+
                 res.status(200).send({
                     status: 'success',
                     count: count,
                     data: result
                 });
             } catch (error) {
+                console.error(error);
                 res.status(500).send({
                     status: 'error',
                     error: error.message
@@ -197,45 +245,67 @@ async function run() {
         });
 
         //Get all destinations of June
-        // app.get('/journey-destinations/june', async (req, res) => {
-        //     const query = {};
+        app.get('/journey-destinations/june', async (req, res) => {
+            try {
+                const query = {};
 
-        //     // current page
-        //     const limit = parseInt(req.query.limit) || 20;
-        //     const page = parseInt(req.query.page) || 1;
-        //     const sortOrder = req.query.sortOrder || 1;
+                // current page
+                const limit = parseInt(req.query.limit) || 20;
+                const page = parseInt(req.query.page) || 1;
+                const sortOrder = req.query.sortOrder || 1;
 
-        //     await journeyList02Collection.createIndex({ departure_station_name: 1 });
+                await journeyList02Collection.createIndex({ departure_station_name: 1 });
 
-        //     const journeyList02 = journeyList02Collection
-        //         .find(query)
-        //         .sort({ departure_station_name: sortOrder })
-        //         .limit(limit)
-        //         .skip(limit * (page - 1))
-        //         .allowDiskUse(true);
+                const journeyList02 = journeyList02Collection
+                    .find(query)
+                    .sort({ departure_station_name: sortOrder })
+                    .limit(limit)
+                    .skip(limit * (page - 1))
+                    .allowDiskUse(true);
 
-        //     const count = await journeyList02Collection.countDocuments(query);
-        //     const result = await journeyList02.toArray();
+                const count = await journeyList02Collection.countDocuments(query);
+                const result = await journeyList02.toArray();
 
-        //     res.send(
-        //         {
-        //             status: "success",
-        //             count: count,
-        //             data: result
-        //         });
-        // });
+                res.send({
+                    status: "success",
+                    count: count,
+                    data: result
+                });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({
+                    status: "error",
+                    message: "An internal server error occurred"
+                });
+            }
+        });
 
-        // // Get a journey details
-        // app.get('/journey-destinations/june/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     // console.log(id);
-        //     const filter = { _id: ObjectId(id) };
-        //     const journeyDetails = await journeyList02Collection.findOne(filter);
-        //     res.send({
-        //         status: "success",
-        //         data: journeyDetails
-        //     });
-        // });
+        // Get a journey details
+        app.get('/journey-destinations/june/:id', async (req, res) => {
+            const id = req.params.id;
+
+            try {
+                const filter = { _id: ObjectId(id) };
+                const journeyDetails = await journeyList02Collection.findOne(filter);
+                if (!journeyDetails) {
+                    res.status(404).send({
+                        status: "error",
+                        error: "Journey not found"
+                    });
+                    return;
+                }
+                res.status(200).send({
+                    status: "success",
+                    data: journeyDetails
+                });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({
+                    status: 'error',
+                    error: error.message
+                });
+            }
+        });
 
         // Get searched destinations of June
         app.get('/destinationsOnJuneSearch', async (req, res) => {
@@ -294,136 +364,30 @@ async function run() {
             const page = parseInt(req.query.page) || 1;
             const sortOrder = req.query.sortOrder || 1;
 
-            await journeyList02Collection.createIndex({ departure_station_name: 1 });
+            try {
+                await journeyList03Collection.createIndex({ departure_station_name: 1 });
 
-            const journeyList03 = journeyList03Collection
-                .find(query)
-                .sort({ departure_station_name: sortOrder })
-                .limit(limit)
-                .skip(limit * (page - 1))
-                .allowDiskUse(true);
+                const journeyList03 = journeyList03Collection
+                    .find(query)
+                    .sort({ departure_station_name: sortOrder })
+                    .limit(limit)
+                    .skip(limit * (page - 1))
+                    .allowDiskUse(true);
 
-            const count = await journeyList03Collection.countDocuments(query)
-            const result = await journeyList03
-                .toArray();
-            res.send(
-                {
+                const count = await journeyList03Collection.countDocuments(query);
+                const result = await journeyList03.toArray();
+
+                res.send({
                     status: "success",
                     count: count,
                     data: result
                 });
-        });
-
-        // app.get('/journey-destinations/june', async (req, res) => {
-        //     const query = {};
-
-        //     // current page
-        //     const limit = parseInt(req.query.limit) || 20;
-        //     const page = parseInt(req.query.page) || 1;
-        //     const sortOrder = req.query.sortOrder || 1;
-
-        //     await journeyList02Collection.createIndex({ departure_station_name: 1 });
-
-        //     const journeyList02 = journeyList02Collection
-        //         .find(query)
-        //         .sort({ departure_station_name: sortOrder })
-        //         .limit(limit)
-        //         .skip(limit * (page - 1))
-        //         .allowDiskUse(true);
-
-        //     const count = await journeyList02Collection.countDocuments(query);
-        //     const result = await journeyList02.toArray();
-
-        //     res.send(
-        //         {
-        //             status: "success",
-        //             count: count,
-        //             data: result
-        //         });
-        // });
-
-        app.get('/journey-destinations/june', async (req, res) => {
-            const query = {};
-
-            console.log(req.query);
-
-            if (req.query.departure_station_name) {
-                query.departure_station_name = req.query.departure_station_name;
+            } catch (error) {
+                res.status(500).send({
+                    status: "error",
+                    error: error.message
+                });
             }
-
-            if (req.query.departure_station_id) {
-                query.departure_station_id = parseInt(req.query.departure_station_id);
-            }
-
-            if (req.query.return_station_name) {
-                query.return_station_name = req.query.return_station_name;
-            }
-
-            if (req.query.return_station_id) {
-                query.return_station_id = parseInt(req.query.return_station_id);
-            }
-
-            if (req.query.covered_distance_in_meter) {
-                switch (req.query.covered_distance_in_meter) {
-                    case '0-.5':
-                        query.covered_distance_in_meter = { $lte: 500 };
-                        break;
-                    case '.51-2':
-                        query.covered_distance_in_meter = { $gt: 500, $lte: 2000 };
-                        break;
-                    case '2-5':
-                        query.covered_distance_in_meter = { $gt: 2000, $lte: 5000 };
-                        break;
-                    case 'more_than_5':
-                        query.covered_distance_in_meter = { $gt: 5000 };
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            if (req.query.duration_in_seconds) {
-                switch (req.query.duration_in_seconds) {
-                    case 'less_than_2':
-                        query.duration_in_seconds = { $lte: 120 };
-                        break;
-                    case '3-5':
-                        query.duration_in_seconds = { $gt: 120, $lte: 300 };
-                        break;
-                    case '6-10':
-                        query.duration_in_seconds = { $gt: 300, $lte: 600 };
-                        break;
-                    case 'more_than_10':
-                        query.duration_in_seconds = { $gt: 600 };
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            // current page
-            const limit = parseInt(req.query.limit) || 20;
-            const page = parseInt(req.query.page) || 1;
-            const sortBy = req.query.sortBy || 'departure_station_name';
-            const sortOrder = req.query.sortOrder || 1;
-
-            const sort = {};
-            sort[sortBy] = sortOrder;
-
-            const journeyList02 = journeyList02Collection
-                .find(query)
-                .sort(sort)
-                .limit(limit)
-                .skip(limit * (page - 1));
-
-            const count = await journeyList02Collection.countDocuments(query);
-            const result = await journeyList02.toArray();
-
-            res.send({
-                status: "success",
-                count: count,
-                data: result
-            });
         });
 
 
