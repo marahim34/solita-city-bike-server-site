@@ -27,6 +27,7 @@ async function run() {
         const journeyList01Collection = client01.db('bikeApp').collection('journeyList01');
         const journeyList02Collection = client02.db('bikeApp').collection('journeyList02');
         const journeyList03Collection = client03.db('bikeApp').collection('journeyList03');
+        const newStationCollection = client03.db('bikeApp').collection('newStation');
 
         //Get all bike stations
         app.get('/bike-stations', async (req, res) => {
@@ -447,6 +448,20 @@ async function run() {
                     status: 'error',
                     error: error.message
                 });
+            }
+        });
+
+        // New Stations End-point
+        app.post('/new-station', async (req, res) => {
+            try {
+                const station = req.body;
+                console.log(station);
+                const result = await newStationCollection.insertOne(station);
+                res.send(result);
+
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ error: 'Something went wrong while saving the user' });
             }
         });
 
